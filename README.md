@@ -14,3 +14,6 @@ Verify
 ```
 kubectl get pods,pvc,statefulsets -n image-transformer
 ```
+
+
+### Development

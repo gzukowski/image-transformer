@@ -15,8 +15,10 @@ logging.basicConfig(
     handlers=[
         logging.StreamHandler(),
         # logging.FileHandler("log/app.log", mode="a", encoding="utf-8")
-    ]
+    ],
 )
+
+
 @asynccontextmanager
 async def lifespan_context_manager(_):
     logger = logging.getLogger(__name__)
@@ -43,12 +45,14 @@ async def lifespan_context_manager(_):
         logger.exception("Failed to connect to the database")
         raise
 
+
 app = FastAPI(
     lifespan=lifespan_context_manager,
     title="image-transformer-backend",
     description="restful service for image-transformer",
     version="1.0.0",
-    logger=logging.getLogger("server_logger"))
+    logger=logging.getLogger("server_logger"),
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -63,6 +67,7 @@ def prod():
     config = Config(app="backend.main:app", log_level="info")
     server = Server(config=config)
     server.run()
+
 
 def dev():
     config = Config(app="backend.main:app", log_level="info", reload=True, reload_dirs=["src"])

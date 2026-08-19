@@ -20,7 +20,9 @@ DB_NAME = os.getenv("DB_NAME")
 
 encoded_password = urllib.parse.quote_plus(DB_PASSWORD or "")
 
-SQLALCHEMY_DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+SQLALCHEMY_DATABASE_URL = (
+    f"postgresql+asyncpg://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
 
 # echo=False to avoid SQL logging; use sqlalchemy.engine logger level for additional control
 engine = create_async_engine(
@@ -34,11 +36,8 @@ engine = create_async_engine(
     pool_pre_ping=True,
 )
 
-SessionLocal = sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False
-)
+SessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+
 
 async def get_db():
     logger.debug("get_db: opening DB session")
@@ -55,6 +54,7 @@ async def test_connection(db: AsyncSession):
     except Exception as e:
         logger.warning("SQLAlchemy error occurred: %s", e)
         raise DBConnectionError from e
+
 
 async def test_check():
     pass
