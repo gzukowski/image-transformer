@@ -10,6 +10,7 @@ from backend.utils.db_interface import get_db
 api_router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
 @api_router.get(
     "/uploads",
     response_model=GetAllUploadsResponse,
@@ -17,7 +18,5 @@ logger = logging.getLogger(__name__)
     summary="Get all uploaded files",
     tags=["uploads", "files"],
 )
-async def get_uploads(
-        db: Annotated[AsyncSession, Depends(get_db)]
-    ):
+async def get_uploads(db: Annotated[AsyncSession, Depends(get_db)]):
     return await get_uploads(db)
