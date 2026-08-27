@@ -13,3 +13,6 @@ floci:
   accessKeyId: test
   secretAccessKey: test
   region: us-east-1
+  bucketName: uploads
+  queueName: image-processing
+  awsCliImage: amazon/aws-cli:latest
