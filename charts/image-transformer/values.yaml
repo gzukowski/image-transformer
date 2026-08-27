@@ -5,8 +5,11 @@ postgres:
   database: image-transformer
   password: ""
 
-minio:
-  image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+floci:
+  image: floci/floci:latest
   storage: 5Gi
-  rootUser: image-transformer
-  rootPassword: ""
+  # Floci doesn't require real AWS credentials or an account — these are dummy
+  # values so the app's AWS SDK client behaves the same as it would against real AWS.
+  accessKeyId: test
+  secretAccessKey: test
+  region: us-east-1
