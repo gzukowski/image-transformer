@@ -5,6 +5,10 @@ postgres:
   database: image-transformer
   password: ""
 
+backend:
+  image: image-transformer-backend:local
+  imagePullPolicy: IfNotPresent
+
 floci:
   image: floci/floci:latest
   storage: 5Gi
