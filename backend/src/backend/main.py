@@ -67,7 +67,7 @@ app.include_router(api_router)
 
 
 def prod():
-    config = Config(app="backend.main:app", log_level="info")
+    config = Config(app="backend.main:app", host="0.0.0.0", port=8000, log_level="info")
     server = Server(config=config)
     server.run()
 
