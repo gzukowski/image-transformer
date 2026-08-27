@@ -8,4 +8,7 @@
    ```
    uv run alembic revision --autogenerate -m "Init"
    ```
-4. placeholder
+4. Running tests
+```
+    uv run pytest .
+```

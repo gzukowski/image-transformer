@@ -7,6 +7,7 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from uvicorn import Config, Server
 
+from backend.routes.upload_router import api_router
 from backend.utils.db_interface import get_db, test_connection
 
 logging.basicConfig(
@@ -62,9 +63,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(api_router)
+
 
 def prod():
-    config = Config(app="backend.main:app", log_level="info")
+    config = Config(app="backend.main:app", host="0.0.0.0", port=8000, log_level="info")
     server = Server(config=config)
     server.run()
 
