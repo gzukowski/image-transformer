@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: floci-bootstrap
+  labels:
+    app.kubernetes.io/name: floci-bootstrap
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "0"
+    # Only "before-hook-creation" (no "hook-succeeded"): the completed Job/Pod from the last
+    # upgrade sticks around so `kubectl logs job/floci-bootstrap` still works for debugging.
+    # It gets cleaned up right before the next upgrade creates a new one.
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: 5
+  activeDeadlineSeconds: 120
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: floci-bootstrap
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: bootstrap
+          image: {{ .Values.floci.awsCliImage }}
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: floci-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: floci-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: floci-credentials
+                  key: AWS_DEFAULT_REGION
+            - name: BUCKET_NAME
+              value: {{ .Values.floci.bucketName | quote }}
+            - name: QUEUE_NAME
+              value: {{ .Values.floci.queueName | quote }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              until aws --endpoint-url http://floci:4566 s3api list-buckets >/dev/null 2>&1; do
+                echo "Waiting for floci..."
+                sleep 2
+              done
+              aws --endpoint-url http://floci:4566 s3 mb "s3://${BUCKET_NAME}" || true
+              aws --endpoint-url http://floci:4566 sqs create-queue --queue-name "${QUEUE_NAME}" || true
+              echo "Floci bootstrap complete: bucket=${BUCKET_NAME} queue=${QUEUE_NAME}"
