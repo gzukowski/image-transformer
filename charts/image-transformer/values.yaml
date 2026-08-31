@@ -8,6 +8,7 @@ postgres:
 backend:
   image: image-transformer-backend:local
   imagePullPolicy: IfNotPresent
+  maxUploadSizeMb: 10
 
 floci:
   image: floci/floci:latest
