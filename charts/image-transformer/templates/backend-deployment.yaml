@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: backend
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: wait-for-deps
+          image: {{ .Values.backend.image }}
+          imagePullPolicy: {{ .Values.backend.imagePullPolicy }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              until (echo > /dev/tcp/postgres/5432) 2>/dev/null; do
+                echo "Waiting for postgres..."
+                sleep 2
+              done
+              until (echo > /dev/tcp/floci/4566) 2>/dev/null; do
+                echo "Waiting for floci..."
+                sleep 2
+              done
+      containers:
+        - name: backend
+          image: {{ .Values.backend.image }}
+          imagePullPolicy: {{ .Values.backend.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: backend-config
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_DB
+            - name: DB_HOST
+              value: postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: floci-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: floci-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: floci-credentials
+                  key: AWS_DEFAULT_REGION
+          readinessProbe:
+            httpGet:
+              path: /docs
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /docs
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi

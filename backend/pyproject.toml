@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.19.1",
     "asyncpg>=0.31.0",
+    "boto3>=1.43.83",
     "fastapi-cache2>=0.2.2",
     "fastapi[standard]>=0.141.1",
     "python-dotenv>=1.2.3",
