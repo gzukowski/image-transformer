@@ -54,3 +54,34 @@ for testing backend forward port to host
 kubectl port-forward -n image-transformer svc/backend 8000:8000
 
 ```
+
+
+processing image
+```
+kubectl port-forward -n image-transformer svc/backend 8000:8000
+
+```
+
+
+upload hero.png
+```
+curl -X POST http://localhost:8000/uploads -F "file=hero.png;type=image/png"
+
+```
+
+checking processor
+```
+kubectl logs -n image-transformer deploy/processor -f
+```
+
+
+
+download from bucket
+
+```
+kubectl port-forward -n image-transformer svc/floci 4566:4566
+```
+```
+curl -o thumb.png "http://localhost:4566/uploads/thumbnails/<id>/hero.png"
+
+```
