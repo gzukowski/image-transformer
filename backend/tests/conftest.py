@@ -9,6 +9,14 @@ from backend.utils import aws_clients
 from backend.utils.db_interface import engine, get_db
 
 
+class _FakeStreamingBody:
+    def __init__(self, data: bytes):
+        self._data = data
+
+    def iter_chunks(self):
+        yield self._data
+
+
 class _FakeS3Client:
     def __init__(self):
         self.objects: dict[tuple[str, str], tuple[bytes, str | None]] = {}
@@ -16,6 +24,10 @@ class _FakeS3Client:
     def put_object(self, Bucket, Key, Body, ContentType=None):  # noqa: N803
         self.objects[(Bucket, Key)] = (Body, ContentType)
         return {}
+
+    def get_object(self, Bucket, Key):  # noqa: N803
+        body, content_type = self.objects[(Bucket, Key)]
+        return {"Body": _FakeStreamingBody(body), "ContentType": content_type}
 
 
 class _FakeSQSClient:
