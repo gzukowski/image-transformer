@@ -3,6 +3,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, UploadFile, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.schemas.upload_schema import GetAllUploadsResponse, UploadResponse
@@ -42,3 +43,13 @@ async def get_upload(upload_id: UUID, db: Annotated[AsyncSession, Depends(get_db
 )
 async def create_upload(file: UploadFile, db: Annotated[AsyncSession, Depends(get_db)]):
     return await upload_service.create_upload(db, file)
+
+
+@api_router.get(
+    "/{upload_id}/thumbnail",
+    status_code=status.HTTP_200_OK,
+    summary="Stream the generated thumbnail for a completed upload",
+)
+async def get_upload_thumbnail(upload_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
+    body, content_type = await upload_service.get_upload_thumbnail(db, upload_id)
+    return StreamingResponse(body.iter_chunks(), media_type=content_type)

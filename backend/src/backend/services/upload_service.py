@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+from typing import Any
 from uuid import UUID
 
 from fastapi import UploadFile, status
@@ -61,3 +62,14 @@ async def get_upload(db: AsyncSession, upload_id: UUID) -> Upload:
     if upload is None:
         _raise_http(status.HTTP_404_NOT_FOUND, f"Upload {upload_id} not found")
     return upload
+
+
+async def get_upload_thumbnail(db: AsyncSession, upload_id: UUID) -> tuple[Any, str]:
+    upload = await get_upload(db, upload_id)
+    if upload.thumbnail_url is None:
+        _raise_http(status.HTTP_404_NOT_FOUND, f"Upload {upload_id} has no thumbnail yet")
+
+    obj = aws_clients.get_s3_client().get_object(
+        Bucket=aws_clients.S3_BUCKET_NAME, Key=upload.thumbnail_url
+    )
+    return obj["Body"], obj.get("ContentType", "application/octet-stream")
