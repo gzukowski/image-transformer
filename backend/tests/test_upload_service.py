@@ -67,3 +67,14 @@ async def test_get_upload_raises_404_when_missing(db_session):
         await upload_service.get_upload(db_session, uuid.uuid4())
 
     assert exc_info.value.status_code == 404
+
+
+async def test_get_upload_thumbnail_raises_404_before_processing(db_session):
+    created = await upload_service.create_upload(
+        db_session, _make_upload_file("d.png", "image/png")
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await upload_service.get_upload_thumbnail(db_session, created.id)
+
+    assert exc_info.value.status_code == 404
