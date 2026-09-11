@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: processor-config
+  labels:
+    app.kubernetes.io/name: processor
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+  AWS_ENDPOINT_URL: "http://floci:4566"
+  S3_BUCKET_NAME: {{ .Values.floci.bucketName | quote }}
+  SQS_QUEUE_NAME: {{ .Values.floci.queueName | quote }}
+  THUMBNAIL_MAX_SIZE: {{ .Values.processor.thumbnailMaxSize | quote }}

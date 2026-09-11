@@ -10,6 +10,11 @@ backend:
   imagePullPolicy: IfNotPresent
   maxUploadSizeMb: 10
 
+processor:
+  image: image-transformer-processor:local
+  imagePullPolicy: IfNotPresent
+  thumbnailMaxSize: 256
+
 floci:
   image: floci/floci:latest
   storage: 5Gi
