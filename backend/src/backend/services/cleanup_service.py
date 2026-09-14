@@ -24,8 +24,9 @@ async def cleanup_stale_uploads(db: AsyncSession, older_than_minutes: int) -> in
             s3_client.delete_object(Bucket=aws_clients.S3_BUCKET_NAME, Key=key)
         except Exception:
             logger.exception("Failed to delete orphaned S3 object %s for upload %s", key, upload.id)
-        await db.delete(upload)
-        logger.info("Cleaned up stale pending upload %s (%s)", upload.id, upload.filename)
+        # Marked expired rather than deleted, so stuck uploads stay visible for tracking.
+        upload.status = UploadStatus.EXPIRED
+        logger.info("Marked stale pending upload %s (%s) as expired", upload.id, upload.filename)
 
     await db.commit()
     return len(stale_uploads)

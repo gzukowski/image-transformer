@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 async def _run() -> None:
     async with SessionLocal() as db:
-        removed = await cleanup_stale_uploads(db, STALE_UPLOAD_MINUTES)
-    logger.info("Cleanup complete: removed %d stale pending upload(s)", removed)
+        expired_count = await cleanup_stale_uploads(db, STALE_UPLOAD_MINUTES)
+    logger.info("Cleanup complete: marked %d stale pending upload(s) as expired", expired_count)
 
 
 def main() -> None:
