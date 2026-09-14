@@ -15,6 +15,10 @@ processor:
   imagePullPolicy: IfNotPresent
   thumbnailMaxSize: 256
 
+frontend:
+  image: image-transformer-frontend:local
+  imagePullPolicy: IfNotPresent
+
 floci:
   image: floci/floci:latest
   storage: 5Gi
