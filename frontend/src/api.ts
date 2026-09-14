@@ -1,4 +1,4 @@
-export type UploadStatus = 'pending' | 'processing' | 'done' | 'failed'
+export type UploadStatus = 'pending' | 'processing' | 'done' | 'failed' | 'expired'
 
 export interface Upload {
     id: string

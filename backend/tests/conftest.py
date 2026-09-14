@@ -29,6 +29,10 @@ class _FakeS3Client:
         body, content_type = self.objects[(Bucket, Key)]
         return {"Body": _FakeStreamingBody(body), "ContentType": content_type}
 
+    def delete_object(self, Bucket, Key):  # noqa: N803
+        self.objects.pop((Bucket, Key), None)
+        return {}
+
 
 class _FakeSQSClient:
     def __init__(self):

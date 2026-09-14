@@ -14,6 +14,7 @@ class UploadStatus(enum.StrEnum):
     PROCESSING = "processing"
     DONE = "done"
     FAILED = "failed"
+    EXPIRED = "expired"
 
 
 class Upload(Base):

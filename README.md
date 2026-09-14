@@ -85,3 +85,25 @@ kubectl port-forward -n image-transformer svc/floci 4566:4566
 curl -o thumb.png "http://localhost:4566/uploads/thumbnails/<id>/hero.png"
 
 ```
+
+
+# build all three images
+```
+docker build -t image-transformer-backend:local backend
+docker build -t image-transformer-processor:local processor
+docker build -t image-transformer-frontend:local frontend
+```
+
+# load them into the kind
+```
+kind load docker-image image-transformer-backend:local image-transformer-processor:local image-transformer-frontend:local --name lab
+```
+# upgrade the release (reuses previously-set values, e.g. postgres.password, by default)
+```
+helm upgrade image-transformer charts/image-transformer -n image-transformer
+```
+
+# forward the frontend to your host
+```
+kubectl port-forward -n image-transformer svc/frontend 8080:80
+```

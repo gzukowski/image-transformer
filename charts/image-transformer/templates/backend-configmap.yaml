@@ -10,3 +10,4 @@ data:
   S3_BUCKET_NAME: {{ .Values.floci.bucketName | quote }}
   SQS_QUEUE_NAME: {{ .Values.floci.queueName | quote }}
   MAX_UPLOAD_SIZE_MB: {{ .Values.backend.maxUploadSizeMb | quote }}
+  STALE_UPLOAD_MINUTES: {{ .Values.backend.cleanupStaleMinutes | quote }}
