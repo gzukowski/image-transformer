@@ -21,6 +21,14 @@ spec:
       containers:
         - name: floci
           image: {{ .Values.floci.image }}
+          # Default storage mode is in-memory, so a bucket/queue created by
+          # floci-bootstrap-job vanishes on every pod restart even though the
+          # PVC below is mounted — force it to actually persist to that PVC.
+          env:
+            - name: FLOCI_STORAGE_MODE
+              value: persistent
+            - name: FLOCI_STORAGE_PERSISTENT_PATH
+              value: /app/data
           ports:
             - name: edge
               containerPort: 4566
