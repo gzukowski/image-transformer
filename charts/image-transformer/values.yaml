@@ -9,6 +9,8 @@ backend:
   image: image-transformer-backend:local
   imagePullPolicy: IfNotPresent
   maxUploadSizeMb: 10
+  cleanupSchedule: "*/3 * * * *"
+  cleanupStaleMinutes: 5
 
 processor:
   image: image-transformer-processor:local
