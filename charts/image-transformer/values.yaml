@@ -21,6 +21,12 @@ frontend:
   image: image-transformer-frontend:local
   imagePullPolicy: IfNotPresent
 
+ingress:
+  enabled: true
+  className: nginx
+  # Empty host matches any Host header (fine for local kind + curl/browser on localhost).
+  host: ""
+
 floci:
   image: floci/floci:latest
   storage: 5Gi
