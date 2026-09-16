@@ -107,3 +107,49 @@ helm upgrade image-transformer charts/image-transformer -n image-transformer
 ```
 kubectl port-forward -n image-transformer svc/frontend 8080:80
 ```
+
+### Ingress
+
+The kind cluster needs to be created with `extraPortMappings` for 80/443 and the
+`ingress-ready=true` node label before ingress-nginx will work — recreate it with the
+committed config (this deletes and rebuilds the cluster, so any images loaded into it
+will need `kind load docker-image` again):
+
+```
+kind delete cluster --name lab
+kind create cluster --name lab --config kind-config.yaml
+```
+
+Install ingress-nginx (kind-specific manifest — deploys the controller with hostPort
+80/443 on the node labeled `ingress-ready=true`):
+
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+```
+
+It is required to set `nodeSelector: {ingress-ready: "true"}` on the
+controller Deployment, so it can land on a worker node with 80/443
+`extraPortMappings` from `kind-config.yaml`. Force it onto
+the control-plane node:
+
+```
+kubectl patch deployment ingress-nginx-controller -n ingress-nginx --type=json \
+  -p='[{"op":"add","path":"/spec/template/spec/nodeSelector/ingress-ready","value":"true"}]'
+kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=180s
+```
+
+Rebuild the app images, load them into the fresh cluster, and install the release (it's a new
+cluster so `helm install`,):
+
+```
+docker build -t image-transformer-backend:local backend
+docker build -t image-transformer-processor:local processor
+docker build -t image-transformer-frontend:local frontend
+kind load docker-image image-transformer-backend:local image-transformer-processor:local image-transformer-frontend:local --name lab
+helm install image-transformer charts/image-transformer -n image-transformer --create-namespace --set postgres.password=postgres
+kubectl get pods,ingress -n image-transformer
+```
+
+Test in the browser at `http://localhost/` — the frontend is served at `/`, and its
+uploads go through `http://localhost/api/uploads` (routed straight to the backend
+Service by the ingress, bypassing the frontend's own nginx `/api` proxy).
