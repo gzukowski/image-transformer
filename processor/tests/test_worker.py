@@ -106,3 +106,12 @@ def test_handle_message_marks_failed_and_still_deletes_on_error(_stub_db):
     assert _stub_db["failed"] == ["missing"]
     assert _stub_db["done"] == []
     assert sqs.deleted_receipt_handles == ["receipt-1"]
+
+
+def test_touch_heartbeat_creates_file(tmp_path, monkeypatch):
+    heartbeat_file = tmp_path / "heartbeat"
+    monkeypatch.setattr(worker, "HEARTBEAT_FILE", heartbeat_file)
+
+    worker.touch_heartbeat()
+
+    assert heartbeat_file.exists()
