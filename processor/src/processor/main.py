@@ -1,6 +1,7 @@
 import logging
 
 from processor.aws_clients import get_queue_url, get_s3_client, get_sqs_client
+from processor.health import start_health_server
 from processor.worker import run
 
 logging.basicConfig(
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 def main() -> None:
     logger.info("Processor starting up")
+    start_health_server()
 
     sqs_client = get_sqs_client()
     s3_client = get_s3_client()

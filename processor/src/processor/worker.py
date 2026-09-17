@@ -2,24 +2,16 @@ import io
 import json
 import logging
 import os
-from pathlib import Path
 
 from PIL import Image
 
 from processor.db import mark_done, mark_failed, mark_processing
+from processor.health import record_heartbeat
 
 logger = logging.getLogger(__name__)
 
 THUMBNAIL_MAX_SIZE = int(os.getenv("THUMBNAIL_MAX_SIZE", "256"))
 POLL_WAIT_SECONDS = 20
-
-# Long-running worker with no HTTP port to probe, so liveness/readiness (see
-# processor-deployment.yaml) exec into the container and check this file's mtime instead.
-HEARTBEAT_FILE = Path(os.getenv("HEARTBEAT_FILE", "/tmp/processor-heartbeat"))
-
-
-def touch_heartbeat() -> None:
-    HEARTBEAT_FILE.touch()
 
 
 def make_thumbnail(image_bytes: bytes) -> tuple[bytes, str]:
@@ -66,7 +58,7 @@ def handle_message(sqs_client, s3_client, queue_url: str, message: dict) -> None
 
 def run(sqs_client, s3_client, queue_url: str) -> None:
     logger.info("Polling queue %s", queue_url)
-    touch_heartbeat()
+    record_heartbeat()
 
     while True:
         response = sqs_client.receive_message(
@@ -74,8 +66,8 @@ def run(sqs_client, s3_client, queue_url: str) -> None:
             MaxNumberOfMessages=1,
             WaitTimeSeconds=POLL_WAIT_SECONDS,
         )
-        touch_heartbeat()
+        record_heartbeat()
 
         for message in response.get("Messages", []):
             handle_message(sqs_client, s3_client, queue_url, message)
-            touch_heartbeat()
+            record_heartbeat()
