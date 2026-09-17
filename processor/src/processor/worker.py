@@ -6,6 +6,7 @@ import os
 from PIL import Image
 
 from processor.db import mark_done, mark_failed, mark_processing
+from processor.health import record_heartbeat
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,7 @@ def handle_message(sqs_client, s3_client, queue_url: str, message: dict) -> None
 
 def run(sqs_client, s3_client, queue_url: str) -> None:
     logger.info("Polling queue %s", queue_url)
+    record_heartbeat()
 
     while True:
         response = sqs_client.receive_message(
@@ -64,6 +66,8 @@ def run(sqs_client, s3_client, queue_url: str) -> None:
             MaxNumberOfMessages=1,
             WaitTimeSeconds=POLL_WAIT_SECONDS,
         )
+        record_heartbeat()
 
         for message in response.get("Messages", []):
             handle_message(sqs_client, s3_client, queue_url, message)
+            record_heartbeat()

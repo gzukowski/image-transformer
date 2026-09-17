@@ -38,6 +38,9 @@ spec:
         - name: processor
           image: {{ .Values.processor.image }}
           imagePullPolicy: {{ .Values.processor.imagePullPolicy }}
+          ports:
+            - name: health
+              containerPort: 8080
           envFrom:
             - configMapRef:
                 name: processor-config
@@ -76,6 +79,20 @@ spec:
                 secretKeyRef:
                   name: floci-credentials
                   key: AWS_DEFAULT_REGION
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
           resources:
             requests:
               cpu: 100m
